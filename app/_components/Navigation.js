@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { getServerSession } from "next-auth";
-import { authConfig } from "@/app/_lib/auth";
+import { auth } from "../_lib/auth";
 
 export default async function Navigation() {
-  const session = await getServerSession(authConfig);
+  const session = await auth();
 
   return (
     <nav className="z-10 text-xl">
@@ -31,10 +30,10 @@ export default async function Navigation() {
               className="hover:text-accent-400 transition-colors flex items-center gap-4"
             >
               <img
+                className="h-8 rounded-full"
                 src={session.user.image}
                 alt={session.user.name}
                 referrerPolicy="no-referrer"
-                className="h-8 rounded-full"
               />
               <span>Guest area</span>
             </Link>
