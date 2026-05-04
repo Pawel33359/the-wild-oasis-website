@@ -1,8 +1,8 @@
 import { Suspense } from "react";
-import CabinList from "../_components/CabinList";
-import Spinner from "../_components/Spinner";
-import Filter from "../_components/Filter";
-import ReservationReminder from "../_components/ReservationReminder";
+import CabinList from "@/app/_components/CabinList";
+import Spinner from "@/app/_components/Spinner";
+import Filter from "@/app/_components/Filter";
+import ReservationReminder from "@/app/_components/ReservationReminder";
 
 // export const revalidate = 3600; // Revalidate every hour
 
