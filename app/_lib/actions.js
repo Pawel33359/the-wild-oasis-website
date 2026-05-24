@@ -3,7 +3,8 @@
 import { auth, signIn, signOut } from "@/app/_lib/auth";
 import { supabase } from "./supabase";
 import { revalidatePath } from "next/cache";
-import { getBooking, getBookings } from "./data-service";
+import { getBooking, getBookings, getCabin } from "./data-service";
+import { redirect } from "next/navigation";
 
 export async function signInAction() {
   await signIn("google", { redirectTo: "/account" });
@@ -53,4 +54,40 @@ export async function deleteBooking(bookingId) {
 
 export async function signOutAction() {
   await signOut({ redirectTo: "/" });
+}
+
+export async function updateReservation(formData) {
+  const session = await auth();
+  if (!session) throw new Error("You must be logged in");
+  const booking = await getBooking(formData.get("reservationId"));
+  if (!booking) throw new Error("Booking not found");
+  const cabin = await getCabin(booking.cabinId);
+  if (!cabin) throw new Error("Cabin not found");
+
+  if (booking.guestId !== session.user.guestId)
+    throw new Error("You are not allowed to edit this booking");
+
+  // Would need to get every booking for the cabin and check if the new number of guests would exceed the max capacity, but skipping that for now since it's just a demo app
+
+  const { data, error } = await supabase
+    .from("bookings")
+    .update({
+      numGuests: formData.get("numGuests"),
+      observations: formData.get("observations"),
+      numNights: formData.get("numNights"),
+      totalPrice:
+        formData.get("numNights") * (cabin.regularPrice - cabin.discount),
+    })
+    .eq("id", formData.get("reservationId"))
+    .select()
+    .single();
+
+  if (error) {
+    console.error(error);
+    throw new Error("Booking could not be updated");
+  }
+
+  revalidatePath("/account/reservations");
+  revalidatePath("/account/reservations" + formData.get("reservationId"));
+  redirect("/account/reservations");
 }
